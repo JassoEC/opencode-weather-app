@@ -6,7 +6,9 @@
   "scripts": {
     "run": "bun run src/index.ts",
     "dev": "bun run src/index.ts --watch",
-    "build": "bun build --compile src/index.ts --outfile weather"
+    "test": "bun test --isolate tests",
+    "test:watch":"bun test --watch",
+    "build": "bun test --isolate tests && bun build --compile src/index.ts --outfile weather"
   },
   "devDependencies": {
     "@types/bun": "latest"
