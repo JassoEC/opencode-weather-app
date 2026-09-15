@@ -9,7 +9,17 @@ import {
   weatherFor,
   weatherForAll,
 } from "./src/weather.ts";
-import { blank, fail, info, renderMenu, success, warn } from "./src/ui.ts";
+import {
+  blank,
+  fail,
+  hint,
+  info,
+  renderMenu,
+  success,
+  warn,
+  withSpinner,
+} from "./src/ui.ts";
+import { cyan, pad, yellow } from "./src/theme.ts";
 
 function ask(message: string): string {
   const value = prompt(message);
@@ -17,7 +27,7 @@ function ask(message: string): string {
 }
 
 function pause(): void {
-  ask("   Presiona Enter para continuar...");
+  ask(cyan("   Presiona Enter para continuar..."));
 }
 
 async function showDefault(config: Config): Promise<void> {
@@ -30,10 +40,10 @@ async function showDefault(config: Config): Promise<void> {
     warn("La ciudad default ya no está registrada.");
     return pause();
   }
-  const w = await weatherFor(city, config.unit);
+  const w = await withSpinner("Consultando el clima...", weatherFor(city, config.unit));
   blank();
-  info(`📍 ${cityLabel(w)}`);
-  info(`   Temperatura: ${formatTemperature(w.temperature)}${w.unit}`);
+  info(cyan(`📍 ${cityLabel(w)}`));
+  info(`Temperatura: ${yellow(`${formatTemperature(w.temperature)}${w.unit}`)}`);
   pause();
 }
 
@@ -42,40 +52,53 @@ async function showAll(config: Config): Promise<void> {
     warn("No hay ciudades registradas. Usa la opción 3 para agregar.");
     return pause();
   }
-  const list = await weatherForAll(config.cities, config.unit);
+  const list = await withSpinner(
+    "Consultando el clima...",
+    weatherForAll(config.cities, config.unit),
+  );
   blank();
   const width = Math.max(...list.map((c) => c.name.length));
   for (const c of list) {
-    const star = sameCityName(c.name, config.defaultCity ?? "") ? " *" : "  ";
-    info(`${star}${c.name.padEnd(width)}  ${formatTemperature(c.temperature)}${c.unit}`);
+    const isDefault = sameCityName(c.name, config.defaultCity ?? "");
+    const star = isDefault ? ` ${yellow("*")}` : "  ";
+    const nameCell = cyan(pad(c.name, width));
+    const tempCell = yellow(`${formatTemperature(c.temperature)}${c.unit}`);
+    info(`${star}${nameCell}  ${tempCell}`);
   }
   pause();
 }
 
 async function addCity(config: Config): Promise<void> {
-  const query = ask("   Nombre de la ciudad a buscar: ");
-  if (!query) return warn("Búsqueda vacía, se canceló.");
-  info("Buscando...");
-  const city = await searchCity(query);
+  const query = ask(cyan("   Nombre de la ciudad a buscar: "));
+  if (!query) {
+    warn("Búsqueda vacía, se canceló.");
+    return pause();
+  }
+  const city = await withSpinner("Buscando ciudad...", searchCity(query));
   if (findCity(config, city.name)) {
-    return warn(`"${city.name}" ya está registrada.`);
+    warn(`"${city.name}" ya está registrada.`);
+    return pause();
   }
   config.cities.push(city);
   const isFirst = config.defaultCity === null;
   if (isFirst) config.defaultCity = city.name;
   saveConfig(config);
   success(`Agregada: ${cityLabel(city)}`);
-  if (isFirst) info(`Ahora es la ciudad default.`);
+  if (isFirst) hint("Ahora es la ciudad default.");
   pause();
 }
 
 function listChoices(config: Config): void {
-  config.cities.forEach((c, i) => info(`  ${i + 1}. ${c.name}`));
+  config.cities.forEach((c, i) => {
+    const isDefault = sameCityName(c.name, config.defaultCity ?? "");
+    const mark = isDefault ? yellow("*") : " ";
+    info(`${mark} ${cyan(`${i + 1}.`)} ${c.name}`);
+  });
 }
 
 function pickIndex(config: Config, message: string): number | null {
   listChoices(config);
-  const raw = ask(message);
+  const raw = ask(cyan(message));
   const n = Number(raw);
   if (!Number.isInteger(n) || n < 1 || n > config.cities.length) {
     warn("Opción no válida.");
@@ -128,7 +151,7 @@ async function main(): Promise<void> {
 
   while (running) {
     renderMenu(config);
-    const option = ask("Selecciona una opción: ");
+    const option = ask(cyan("   Selecciona una opción: "));
     blank();
     try {
       switch (option) {
@@ -153,7 +176,7 @@ async function main(): Promise<void> {
         case "9":
           running = false;
           blank();
-          info("¡Hasta pronto! ☀");
+          info(cyan("¡Hasta pronto! ☀"));
           break;
         case "":
           break;
