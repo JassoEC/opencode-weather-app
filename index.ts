@@ -1,6 +1,7 @@
 import { loadConfig, saveConfig, type Config } from "./src/config.ts";
 import {
   cityLabel,
+  dailyFor,
   findCity,
   formatTemperature,
   sameCityName,
@@ -8,7 +9,9 @@ import {
   unitSymbol,
   weatherFor,
   weatherForAll,
+  weekdayLabel,
 } from "./src/weather.ts";
+import { describeWeather } from "./src/codes.ts";
 import {
   blank,
   fail,
@@ -19,7 +22,7 @@ import {
   warn,
   withSpinner,
 } from "./src/ui.ts";
-import { cyan, pad, yellow } from "./src/theme.ts";
+import { cyan, dim, pad, yellow } from "./src/theme.ts";
 
 function ask(message: string): string {
   const value = prompt(message);
@@ -64,6 +67,40 @@ async function showAll(config: Config): Promise<void> {
     const nameCell = cyan(pad(c.name, width));
     const tempCell = yellow(`${formatTemperature(c.temperature)}${c.unit}`);
     info(`${star}${nameCell}  ${tempCell}`);
+  }
+  pause();
+}
+
+async function showForecast(config: Config): Promise<void> {
+  if (config.cities.length === 0) {
+    warn("No hay ciudades. Agrega una primero (opción 3).");
+    return pause();
+  }
+  const idx = pickIndex(config, "   Número de la ciudad: ");
+  if (idx === null) return;
+  const city = config.cities[idx];
+  if (!city) return;
+
+  const sym = unitSymbol(config.unit);
+  const fmt = (v: number): string =>
+    Number.isFinite(v) ? `${formatTemperature(v)}${sym}` : "—";
+
+  const days = await withSpinner(
+    "Cargando pronóstico...",
+    dailyFor(city, config.unit),
+  );
+  blank();
+  info(cyan(`📍 ${cityLabel(city)}`));
+  info(dim(`${pad("Día", 13)}${pad("Mín", 8)}${pad("Máx", 8)}Condición`));
+  info(dim("   " + "─".repeat(46)));
+  for (const d of days) {
+    const c = describeWeather(d.code);
+    const line =
+      pad(weekdayLabel(d.date), 13) +
+      cyan(pad(fmt(d.min), 8)) +
+      yellow(pad(fmt(d.max), 8)) +
+      `${c.emoji} ${c.text}`;
+    info(line);
   }
   pause();
 }
@@ -169,6 +206,9 @@ async function main(): Promise<void> {
           break;
         case "5":
           setDefault(config);
+          break;
+        case "6":
+          await showForecast(config);
           break;
         case "8":
           toggleUnit(config);

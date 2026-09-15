@@ -24,6 +24,22 @@ interface ForecastResponse {
   };
 }
 
+export interface DailyForecast {
+  date: string;
+  min: number;
+  max: number;
+  code: number;
+}
+
+interface DailyResponse {
+  daily?: {
+    time?: string[];
+    temperature_2m_max?: number[];
+    temperature_2m_min?: number[];
+    weather_code?: number[];
+  };
+}
+
 export async function geocode(query: string): Promise<City> {
   const url = `${GEOCODE_URL}?name=${encodeURIComponent(query)}&count=1&language=es&format=json`;
   const res = await fetch(url);
@@ -64,4 +80,31 @@ export async function fetchTemperature(
     temperature,
     unit: data.current_units?.temperature_2m ?? (unit === "celsius" ? "°C" : "°F"),
   };
+}
+
+export async function fetchDaily(
+  city: City,
+  unit: Unit,
+  days = 7,
+): Promise<DailyForecast[]> {
+  const url =
+    `${FORECAST_URL}?latitude=${city.latitude}&longitude=${city.longitude}` +
+    `&daily=temperature_2m_max,temperature_2m_min,weather_code` +
+    `&forecast_days=${days}&temperature_unit=${unit}&timezone=auto`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`Error al consultar el pronóstico (${res.status})`);
+  }
+  const data = (await res.json()) as DailyResponse;
+  const { time, temperature_2m_max, temperature_2m_min, weather_code } =
+    data.daily ?? {};
+  if (!time || !temperature_2m_max || !temperature_2m_min) {
+    throw new Error("El pronóstico no incluye datos diarios");
+  }
+  return time.map((date, i) => ({
+    date,
+    min: temperature_2m_min[i] ?? NaN,
+    max: temperature_2m_max[i] ?? NaN,
+    code: weather_code?.[i] ?? -1,
+  }));
 }

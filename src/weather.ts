@@ -1,5 +1,8 @@
-import { fetchTemperature, geocode } from "./api.ts";
+import { fetchDaily, fetchTemperature, geocode } from "./api.ts";
 import type { City, Config, Unit } from "./config.ts";
+
+export type { DailyForecast } from "./api.ts";
+import type { DailyForecast } from "./api.ts";
 
 export interface CityWeather extends City {
   temperature: number;
@@ -43,4 +46,26 @@ export async function weatherForAll(
   unit: Unit,
 ): Promise<CityWeather[]> {
   return Promise.all(cities.map((c) => weatherFor(c, unit)));
+}
+
+const DATE_FMT = new Intl.DateTimeFormat("es", {
+  weekday: "short",
+  day: "2-digit",
+  month: "2-digit",
+  timeZone: "UTC",
+});
+
+export function weekdayLabel(isoDate: string): string {
+  const [y, m, d] = isoDate.split("-").map(Number);
+  if (!y || !m || !d) return isoDate;
+  const date = new Date(Date.UTC(y, m - 1, d));
+  return DATE_FMT.format(date).replace(/\./g, "");
+}
+
+export async function dailyFor(
+  city: City,
+  unit: Unit,
+  days = 7,
+): Promise<DailyForecast[]> {
+  return fetchDaily(city, unit, days);
 }

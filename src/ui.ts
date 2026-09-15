@@ -22,6 +22,7 @@ export function renderMenu(config: Config): void {
     option("3", "Buscar y agregar ciudad"),
     option("4", "Eliminar ciudad"),
     option("5", "Establecer ciudad default"),
+    option("6", "Pronóstico 7 días"),
     option("8", `Ajustes (${unit})`),
     option("9", "Salir"),
     BAR,
