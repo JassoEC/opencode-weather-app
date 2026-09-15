@@ -5,10 +5,10 @@
   "private": true,
   "scripts": {
     "run": "bun run src/index.ts",
-    "dev": "bun run src/index.ts --watch",
+    "dev": "bun run --watch src/index.ts",
     "test": "bun test --isolate tests",
-    "test:watch":"bun test --watch",
-    "build": "bun test --isolate tests && bun build --compile src/index.ts --outfile weather"
+    "test:watch": "bun test --isolate --watch tests",
+    "build": "bun run test && bun build --compile src/index.ts --outfile dist/weather"
   },
   "devDependencies": {
     "@types/bun": "latest"
