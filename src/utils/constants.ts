@@ -1,9 +1,9 @@
-export interface WeatherCondition {
-  text: string;
-  emoji: string;
-}
+import type { WeatherCondition } from "../types/Weather.ts";
 
-const CONDITIONS: Record<number, WeatherCondition> = {
+export const GEOCODE_URL = "https://geocoding-api.open-meteo.com/v1/search";
+export const FORECAST_URL = "https://api.open-meteo.com/v1/forecast";
+
+export const CONDITIONS: Record<number, WeatherCondition> = {
   0: { text: "Despejado", emoji: "☀️" },
   1: { text: "Mayormente despejado", emoji: "🌤️" },
   2: { text: "Parcialmente nuboso", emoji: "⛅" },
@@ -34,8 +34,9 @@ const CONDITIONS: Record<number, WeatherCondition> = {
   99: { text: "Tormenta con granizo intenso", emoji: "⛈️" },
 };
 
-const UNKNOWN: WeatherCondition = { text: "Sin datos", emoji: "❔" };
+export const UNKNOWN: WeatherCondition = { text: "Sin datos", emoji: "❔" };
 
-export function describeWeather(code: number): WeatherCondition {
-  return CONDITIONS[code] ?? UNKNOWN;
-}
+export const CONFIG_DIR = "~/.config/weather-cli";
+export const CONFIG_FILE = "~/.config/weather-cli/config.json";
+export const CITIES_FILE = "~/.config/weather-cli/cities.json";
+export const SETTINGS_FILE = "~/.config/weather-cli/settings.json";

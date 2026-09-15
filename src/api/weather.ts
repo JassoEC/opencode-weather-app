@@ -1,19 +1,6 @@
-import type { City, Unit } from "./config.ts";
-
-const GEOCODE_URL = "https://geocoding-api.open-meteo.com/v1/search";
-const FORECAST_URL = "https://api.open-meteo.com/v1/forecast";
-
-interface GeocodeResult {
-  name: string;
-  latitude: number;
-  longitude: number;
-  country?: string;
-  admin1?: string;
-}
-
-interface GeocodeResponse {
-  results?: GeocodeResult[];
-}
+import type { City, Unit } from "../types/City.ts";
+import type { DailyForecast } from "../types/Weather.ts";
+import { FORECAST_URL } from "../utils/constants.ts";
 
 interface ForecastResponse {
   current?: {
@@ -24,39 +11,12 @@ interface ForecastResponse {
   };
 }
 
-export interface DailyForecast {
-  date: string;
-  min: number;
-  max: number;
-  code: number;
-}
-
 interface DailyResponse {
   daily?: {
     time?: string[];
     temperature_2m_max?: number[];
     temperature_2m_min?: number[];
     weather_code?: number[];
-  };
-}
-
-export async function geocode(query: string): Promise<City> {
-  const url = `${GEOCODE_URL}?name=${encodeURIComponent(query)}&count=1&language=es&format=json`;
-  const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error(`Error de geocodificación (${res.status})`);
-  }
-  const data = (await res.json()) as GeocodeResponse;
-  const first = data.results?.[0];
-  if (!first) {
-    throw new Error(`No se encontró la ciudad "${query}"`);
-  }
-  return {
-    name: first.name,
-    latitude: first.latitude,
-    longitude: first.longitude,
-    country: first.country ?? "",
-    admin1: first.admin1 ?? "",
   };
 }
 

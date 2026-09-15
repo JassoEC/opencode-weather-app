@@ -1,34 +1,4 @@
-import type { Config } from "./config.ts";
-import { unitSymbol } from "./weather.ts";
-import { bold, colorsEnabled, cyan, dim, green, red, yellow } from "./theme.ts";
-
-const BAR = cyan("═".repeat(40));
-
-export function clear(): void {
-  process.stdout.write("\x1b[2J\x1b[H");
-}
-
-export function renderMenu(config: Config): void {
-  const count = yellow(String(config.cities.length));
-  const unit = yellow(unitSymbol(config.unit));
-  const option = (key: string, text: string): string => `  ${cyan(`${key}.`)} ${text}`;
-  const lines = [
-    "",
-    BAR,
-    cyan(bold("         WEATHER CLI")),
-    BAR,
-    option("1", "Clima de ciudad default"),
-    option("2", `Clima de todas las ciudades (${count})`),
-    option("3", "Buscar y agregar ciudad"),
-    option("4", "Eliminar ciudad"),
-    option("5", "Establecer ciudad default"),
-    option("6", "Pronóstico 7 días"),
-    option("8", `Ajustes (${unit})`),
-    option("9", "Salir"),
-    BAR,
-  ];
-  process.stdout.write(`${lines.join("\n")}\n`);
-}
+import { colorsEnabled, cyan, dim, green, red, yellow } from "../utils/colors.ts";
 
 export async function withSpinner<T>(label: string, task: Promise<T>): Promise<T> {
   if (!colorsEnabled) return task;
@@ -71,4 +41,8 @@ export function fail(message: string): void {
 
 export function blank(): void {
   console.log("");
+}
+
+export function pause(): void {
+  prompt(cyan("   Presiona Enter para continuar..."));
 }

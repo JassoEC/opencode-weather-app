@@ -6,7 +6,7 @@ Weather CLI app. Asks for a city, fetches current temperature via Open-Meteo (tw
 
 ## Runtime & Toolchain
 
-- **Runtime:** Bun (not Node). Run with `bun run index.ts`.
+- **Runtime:** Bun (not Node). Run with `bun run src/index.ts`.
 - **Language:** TypeScript strict mode, ESM (`"type": "module"` in package.json).
 - **Package manager:** Bun (`bun.lock` present). Install deps with `bun install`.
 
@@ -17,11 +17,31 @@ Weather CLI app. Asks for a city, fetches current temperature via Open-Meteo (tw
 
 No API key required.
 
-## CLI Features (planned)
+## CLI Features
 
 - Default city, register/delete cities, temperature unit toggle (°C/°F).
+- 7-day forecast per city.
 - Interactive menu-driven interface (see README for mockup).
 - Generates a standalone binary (`bun build`).
+
+## Architecture (layered)
+
+- `src/actions/`      — one action per file, `run(state: AppState)` signature; each persists via storage
+- `src/presentation/` — menu.ts / output.ts / input.ts (console I/O only)
+- `src/storage/`      — citiesStorage.ts, settingsStorage.ts, migrate.ts
+- `src/api/`          — geocoding.ts, weather.ts (Open-Meteo)
+- `src/types/`        — City.ts, Weather.ts, Settings.ts, MenuOption.ts
+- `src/utils/`        — format.ts, constants.ts, colors.ts
+- `src/index.ts`      — menu loop; dispatches from `OPTIONS: MenuOption[]` array
+
+## Storage
+
+- `~/.config/weather-cli/cities.json` + `settings.json`
+- Migración automática desde `config.json` (se respalda como `.bak`) vía `src/storage/migrate.ts`
+
+## Extending
+
+- Nueva función = nuevo archivo en `src/actions/` + entrada en `OPTIONS` (`src/index.ts`)
 
 ## Conventions
 

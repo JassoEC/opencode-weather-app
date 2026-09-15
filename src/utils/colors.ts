@@ -17,14 +17,3 @@ export const cyan = wrap("\x1b[36m", "\x1b[39m");
 export const yellow = wrap("\x1b[33m", "\x1b[39m");
 export const green = wrap("\x1b[32m", "\x1b[39m");
 export const red = wrap("\x1b[31m", "\x1b[39m");
-
-const ANSI_RE = /\x1b\[[0-9;]*m/g;
-
-export function visibleLength(text: string): number {
-  return [...text.replace(ANSI_RE, "")].length;
-}
-
-export function pad(text: string, width: number): string {
-  const diff = width - visibleLength(text);
-  return diff > 0 ? text + " ".repeat(diff) : text;
-}
